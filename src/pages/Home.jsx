@@ -1,6 +1,5 @@
-
-import { useEffect, useState } from "react";
-import { getPokemonList } from "../services/api";
+import { useEffect, useState, useCallback } from "react";
+import { getRandomPokemon } from "../services/api";
 import PokemonCard from "../components/PokemonCard";
 
 function Home() {
@@ -8,33 +7,49 @@ function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    async function loadPokemon() {
-      try {
-        const data = await getPokemonList(24, 0);
-        setPokemon(data.results);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
+  const loadRandomPokemon = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const randomPokemonData = await getRandomPokemon(12);
+      setPokemon(randomPokemonData);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-
-    loadPokemon();
   }, []);
 
-  if (loading) return <h2>Loading Pokemon...</h2>;
-  if (error) return <h2>Error: {error}</h2>;
+  useEffect(() => {
+    loadRandomPokemon();
+  }, [loadRandomPokemon]);
+
+  if (loading && pokemon.length === 0) {
+    return <h2 className="text-center py-5">Loading Pokemon Pool...</h2>;
+  }
+  
+  if (error) {
+    return <h2 className="text-center py-5 text-danger">Error: {error}</h2>;
+  }
 
   return (
     <div className="container py-5">
-      <h1 className="mb-4">Explore Pokemon</h1>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h1>Explore Random Pokemon</h1>
+          <button
+            className="btn btn-primary"
+            onClick={loadRandomPokemon}
+            disabled={loading}
+          >
+            {loading ? "Shuffling..." : "Shuffle Pokemon"}
+          </button>
+      </div>
 
       <div className="row g-4">
-        {pokemon.map((pokemon) => (
+        {pokemon.map((p) => (
           <PokemonCard
-            key={pokemon.name}
-            pokemon={pokemon}
+            key={p.name}
+            pokemon={p}
           />
         ))}
       </div>

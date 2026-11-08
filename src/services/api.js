@@ -1,4 +1,3 @@
-
 const BASE_URL = "https://pokeapi.co/api/v2";
 
 const CACHE_DURATION = 60 * 60 * 1000; // 1 hour
@@ -59,6 +58,7 @@ export async function fetchWithCache(url) {
 
   return data;
 }
+
 // Fetch specific pokemon by ID
 export async function getPokemon(id) {
   return fetchWithCache(`${BASE_URL}/pokemon/${id}`);
@@ -68,4 +68,29 @@ export async function getPokemonList(limit = 24, offset = 0) {
   return fetchWithCache(
     `${BASE_URL}/pokemon?limit=${limit}&offset=${offset}`
   );
+}
+// Fetch a bunch of pokemons one time, to avoid calling the API too often
+// Returns lightweight data
+export async function getPokemonPool(limit = 2000, offset = 0) {
+  const data = await fetchWithCache(
+    `${BASE_URL}/pokemon?limit=${limit}&offset=${offset}`
+  );
+  return data.results;
+}
+
+export async function getRandomPokemon(count = 12) {
+  const pool = await getPokemonPool();
+
+  const randomItems = [];
+  const takenIndices = new Set();
+
+  while (randomItems.length < count && takenIndices.size < pool.length) {
+    const randomIndex = Math.floor(Math.random() * pool.length);
+    if (!takenIndices.has(randomIndex)) {
+      takenIndices.add(randomIndex);
+      randomItems.push(pool[randomIndex]);
+    }
+  }
+
+  return randomItems;
 }

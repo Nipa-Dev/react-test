@@ -5,12 +5,10 @@ function Navbar() {
     <nav className="navbar navbar-light bg-white border-bottom py-3">
       <div className="container d-flex justify-content-between align-items-center">
         
-        {/* Brand */}
         <Link className="navbar-brand fw-bold text-danger m-0" to="/">
           Pokemons
         </Link>
 
-        {/* Links */}
         <div className="navbar-nav flex-row gap-3">
           <NavLink
             to="/"
