@@ -39,7 +39,12 @@ function Details() {
 
       <h1 className="text-capitalize">{pokemon.name}</h1>
       <p>#{String(pokemon.id).padStart(3, "0")}</p>
-
+      <img
+        src={pokemon.sprites.other["official-artwork"].front_default}
+        alt={pokemon.name}
+        className="img-fluid"
+        style={{ maxWidth: "300px" }}
+      />
     </div>
   );
 }
