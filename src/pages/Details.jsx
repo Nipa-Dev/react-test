@@ -45,6 +45,32 @@ function Details() {
         className="img-fluid"
         style={{ maxWidth: "300px" }}
       />
+      <div className="mt-3">
+        <p>
+          <strong>Type:</strong>{" "}
+          {pokemon.types.map((type) => type.type.name).join(", ")}
+        </p>
+
+        <p>
+          <strong>Height:</strong> {pokemon.height / 10} m
+        </p>
+
+        <p>
+          <strong>Weight:</strong> {pokemon.weight / 10} kg
+        </p>
+      </div>
+      <div className="mt-4">
+        <h3>Base Stats</h3>
+        
+        {pokemon.stats.map((stat) => (
+          <p key={stat.stat.name}>
+            <strong className="text-capitalize">
+              {stat.stat.name.replace("-", " ")}:
+            </strong>{" "}
+            {stat.base_stat}
+          </p>
+        ))}
+      </div>
     </div>
   );
 }
