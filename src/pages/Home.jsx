@@ -1,57 +1,99 @@
-import { useEffect, useState, useCallback } from "react";
-import { getRandomPokemon } from "../services/api";
+import { useEffect, useState } from "react";
+import { getPokemonPool, getRandomPokemon } from "../services/api";
 import PokemonCard from "../components/PokemonCard";
+import SearchBar from "../components/SearchBar";
 
 function Home() {
   const [pokemon, setPokemon] = useState([]);
+  const [pokemonPool, setPokemonPool] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const loadRandomPokemon = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const randomPokemonData = await getRandomPokemon(12);
-      setPokemon(randomPokemonData);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    async function loadPokemonPool() {
+      try {
+        const pool = await getPokemonPool(2000);
+        const randomPokemon = await getRandomPokemon(12);
+
+        setPokemonPool(pool);
+        setPokemon(randomPokemon);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
     }
+
+    loadPokemonPool();
   }, []);
 
-  useEffect(() => {
-    loadRandomPokemon();
-  }, [loadRandomPokemon]);
+  const handleShuffle = async () => {
+    try {
+      const randomPokemon = await getRandomPokemon(12);
+      setPokemon(randomPokemon);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
 
-  if (loading && pokemon.length === 0) {
-    return <h2 className="text-center py-5">Loading Pokemon Pool...</h2>;
+  // Filter Pokemon by name
+  const displayedPokemon = searchTerm.trim()
+    ? pokemonPool.filter((p) =>
+        p.name.includes(searchTerm.toLowerCase().trim())
+      )
+    : pokemon;
+
+  if (loading) {
+    return (
+      <h2 className="text-center py-5">
+        Loading Pokemon Pool...
+      </h2>
+    );
   }
-  
+
   if (error) {
-    return <h2 className="text-center py-5 text-danger">Error: {error}</h2>;
+    return (
+      <h2 className="text-center text-danger py-5">
+        Error: {error}
+      </h2>
+    );
   }
 
   return (
-    <div className="container py-5">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1>Explore Random Pokemon</h1>
-          <button
-            className="btn btn-primary"
-            onClick={loadRandomPokemon}
-            disabled={loading}
-          >
-            {loading ? "Shuffling..." : "Shuffle Pokemon"}
-          </button>
+    <div className="container py-3">
+      <div className="mb-3">
+        <h1 className="mb-4">Explore Pokemon</h1>
+
+        <div className="row g-3 align-items-center">
+          <div className="col-12 col-md">
+            <SearchBar
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+            />
+          </div>
+
+          <div className="col-12 col-md-auto">
+            <button
+              className="btn btn-primary w-100"
+              onClick={handleShuffle}
+            >
+              Shuffle Pokemon
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="row g-4">
-        {pokemon.map((p) => (
-          <PokemonCard
-            key={p.name}
-            pokemon={p}
-          />
-        ))}
+        {displayedPokemon.length > 0 ? (
+          displayedPokemon.map((p) => (
+            <PokemonCard key={p.name} pokemon={p} />
+          ))
+        ) : (
+          <p className="text-center py-4">
+            No Pokemon found matching "{searchTerm}".
+          </p>
+        )}
       </div>
     </div>
   );
