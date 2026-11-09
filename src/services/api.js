@@ -1,6 +1,6 @@
 const BASE_URL = "https://pokeapi.co/api/v2";
 
-const CACHE_DURATION = 60 * 60 * 1000; // 1 hour
+const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 
 // In-memory cache
 const memoryCache = new Map();
