@@ -1,13 +1,35 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router";
 import { getPokemon } from "../services/api";
+import { Heart } from "lucide-react";
+import { useTeam } from "../context/TeamContext";
 
 function Details() {
   const { id } = useParams();
+  const { team, addToTeam, removeFromTeam } = useTeam();
+  const [teamMessage, setTeamMessage] = useState("");
 
   const [pokemon, setPokemon] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const handleTeamToggle = () => {
+    const isInTeam = team.some((p) => p.id === pokemon.id);
+
+    if (isInTeam) {
+      removeFromTeam(pokemon.id);
+      setTeamMessage(`${pokemon.name} removed from your team.`);
+      return;
+    }
+
+    const result = addToTeam(pokemon);
+
+    if (result === "added") {
+      setTeamMessage(`${pokemon.name} added to your team!`);
+    } else if (result === "full") {
+      setTeamMessage("Your team is already full (6 Pokemon).");
+    }
+  };
 
   useEffect(() => {
     async function loadPokemon() {
@@ -61,7 +83,7 @@ function Details() {
       </div>
       <div className="mt-4">
         <h3>Base Stats</h3>
-        
+
         {pokemon.stats.map((stat) => (
           <p key={stat.stat.name}>
             <strong className="text-capitalize">
@@ -70,6 +92,31 @@ function Details() {
             {stat.base_stat}
           </p>
         ))}
+      </div>
+      <div className="mt-4 mb-4 d-flex gap-2">
+        <button
+          className={`btn ${
+            team.some((p) => p.id === pokemon.id)
+              ? "btn-outline-danger"
+              : "btn-primary"
+          }`}
+          onClick={handleTeamToggle}
+          disabled={!team.some((p) => p.id === pokemon.id) && team.length >= 6}
+        >
+          {team.some((p) => p.id === pokemon.id)
+            ? "Remove from Team"
+            : team.length >= 6
+              ? "Team Full"
+              : "+ Add to Team"}
+        </button>
+        <button
+          className="btn btn-outline-danger"
+          aria-label="Add to Favorites"
+          title="Add to Favorites"
+        >
+          <Heart size={20} />
+        </button>
+        {teamMessage && <p className="mt-2 text-muted">{teamMessage}</p>}
       </div>
     </div>
   );

@@ -45,7 +45,7 @@ export async function fetchWithCache(url) {
 
   const cacheEntry = {
     data,
-    timestamp: Date.now()
+    timestamp: Date.now(),
   };
 
   memoryCache.set(url, cacheEntry);
@@ -65,15 +65,13 @@ export async function getPokemon(id) {
 }
 
 export async function getPokemonList(limit = 24, offset = 0) {
-  return fetchWithCache(
-    `${BASE_URL}/pokemon?limit=${limit}&offset=${offset}`
-  );
+  return fetchWithCache(`${BASE_URL}/pokemon?limit=${limit}&offset=${offset}`);
 }
 // Fetch a bunch of pokemons one time, to avoid calling the API too often
 // Returns lightweight data
 export async function getPokemonPool(limit = 2000, offset = 0) {
   const data = await fetchWithCache(
-    `${BASE_URL}/pokemon?limit=${limit}&offset=${offset}`
+    `${BASE_URL}/pokemon?limit=${limit}&offset=${offset}`,
   );
   return data.results;
 }

@@ -4,7 +4,6 @@ function Navbar() {
   return (
     <nav className="navbar navbar-light bg-white border-bottom py-3">
       <div className="container d-flex justify-content-between align-items-center">
-        
         <Link className="navbar-brand fw-bold text-danger m-0" to="/">
           Pokemons
         </Link>
@@ -33,7 +32,6 @@ function Navbar() {
             My Team
           </NavLink>
         </div>
-
       </div>
     </nav>
   );

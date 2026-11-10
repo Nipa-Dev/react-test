@@ -40,24 +40,16 @@ function Home() {
   // Filter Pokemon by name
   const displayedPokemon = searchTerm.trim()
     ? pokemonPool.filter((p) =>
-        p.name.includes(searchTerm.toLowerCase().trim())
+        p.name.includes(searchTerm.toLowerCase().trim()),
       )
     : pokemon;
 
   if (loading) {
-    return (
-      <h2 className="text-center py-5">
-        Loading Pokemon Pool...
-      </h2>
-    );
+    return <h2 className="text-center py-5">Loading Pokemon Pool...</h2>;
   }
 
   if (error) {
-    return (
-      <h2 className="text-center text-danger py-5">
-        Error: {error}
-      </h2>
-    );
+    return <h2 className="text-center text-danger py-5">Error: {error}</h2>;
   }
 
   return (
@@ -67,17 +59,11 @@ function Home() {
 
         <div className="row g-3 align-items-center">
           <div className="col-12 col-md">
-            <SearchBar
-              searchTerm={searchTerm}
-              onSearchChange={setSearchTerm}
-            />
+            <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
           </div>
 
           <div className="col-12 col-md-auto">
-            <button
-              className="btn btn-primary w-100"
-              onClick={handleShuffle}
-            >
+            <button className="btn btn-primary w-100" onClick={handleShuffle}>
               Shuffle Pokemon
             </button>
           </div>
@@ -86,9 +72,7 @@ function Home() {
 
       <div className="row g-4">
         {displayedPokemon.length > 0 ? (
-          displayedPokemon.map((p) => (
-            <PokemonCard key={p.name} pokemon={p} />
-          ))
+          displayedPokemon.map((p) => <PokemonCard key={p.name} pokemon={p} />)
         ) : (
           <p className="text-center py-4">
             No Pokemon found matching "{searchTerm}".
