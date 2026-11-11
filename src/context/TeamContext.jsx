@@ -25,6 +25,12 @@ export function TeamProvider({ children }) {
     return "added";
   };
 
+  const replaceTeam = (newTeam) => {
+    const updatedTeam = newTeam.slice(0, 6);
+    setTeam(updatedTeam);
+    localStorage.setItem("pokemon-team", JSON.stringify(updatedTeam));
+  };
+
   const removeFromTeam = (id) => {
     const updatedTeam = team.filter((p) => p.id !== id);
 
@@ -33,7 +39,9 @@ export function TeamProvider({ children }) {
   };
 
   return (
-    <TeamContext.Provider value={{ team, addToTeam, removeFromTeam }}>
+    <TeamContext.Provider
+      value={{ team, addToTeam, removeFromTeam, replaceTeam }}
+    >
       {children}
     </TeamContext.Provider>
   );

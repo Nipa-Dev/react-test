@@ -3,10 +3,12 @@ import { useParams, Link } from "react-router";
 import { getPokemon } from "../services/api";
 import { Heart } from "lucide-react";
 import { useTeam } from "../context/TeamContext";
+import { useFavorites } from "../context/FavoritesContext";
 
 function Details() {
   const { id } = useParams();
   const { team, addToTeam, removeFromTeam } = useTeam();
+  const { toggleFavorite, isFavorite } = useFavorites();
   const [teamMessage, setTeamMessage] = useState("");
 
   const [pokemon, setPokemon] = useState(null);
@@ -110,11 +112,25 @@ function Details() {
               : "+ Add to Team"}
         </button>
         <button
-          className="btn btn-outline-danger"
-          aria-label="Add to Favorites"
-          title="Add to Favorites"
+          className={`btn ${
+            isFavorite(pokemon.id) ? "btn-danger" : "btn-outline-danger"
+          }`}
+          onClick={() => toggleFavorite(pokemon)}
+          aria-label={
+            isFavorite(pokemon.id)
+              ? "Remove from Favorites"
+              : "Add to Favorites"
+          }
+          title={
+            isFavorite(pokemon.id)
+              ? "Remove from Favorites"
+              : "Add to Favorites"
+          }
         >
-          <Heart size={20} />
+          <Heart
+            size={20}
+            fill={isFavorite(pokemon.id) ? "currentColor" : "none"}
+          />
         </button>
         {teamMessage && <p className="mt-2 text-muted">{teamMessage}</p>}
       </div>
