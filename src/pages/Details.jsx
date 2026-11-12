@@ -1,23 +1,50 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router";
-import { getPokemon } from "../services/api";
 import { Heart } from "lucide-react";
-import { useTeam } from "../context/TeamContext";
+
+import { getPokemon } from "../services/api";
+import { useTeam } from "../context/useTeam";
 import { useFavorites } from "../context/FavoritesContext";
+
+import PokemonTypes from "../components/PokemonTypes";
+import PokemonStats from "../components/PokemonStats";
+import PokemonInfo from "../components/PokemonInfo";
 
 function Details() {
   const { id } = useParams();
   const { team, addToTeam, removeFromTeam } = useTeam();
   const { toggleFavorite, isFavorite } = useFavorites();
-  const [teamMessage, setTeamMessage] = useState("");
 
   const [pokemon, setPokemon] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [teamMessage, setTeamMessage] = useState("");
+
+  const isInTeam = pokemon ? team.some((p) => p.id === pokemon.id) : false;
+
+  const favorite = pokemon ? isFavorite(pokemon.id) : false;
+
+  useEffect(() => {
+    async function loadPokemon() {
+      setLoading(true);
+      setError(null);
+      setPokemon(null);
+      setTeamMessage("");
+
+      try {
+        const data = await getPokemon(id);
+        setPokemon(data);
+      } catch (err) {
+        setError(err.message || "Could not load Pokemon.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadPokemon();
+  }, [id]);
 
   const handleTeamToggle = () => {
-    const isInTeam = team.some((p) => p.id === pokemon.id);
-
     if (isInTeam) {
       removeFromTeam(pokemon.id);
       setTeamMessage(`${pokemon.name} removed from your team.`);
@@ -27,33 +54,36 @@ function Details() {
     const result = addToTeam(pokemon);
 
     if (result === "added") {
-      setTeamMessage(`${pokemon.name} added to your team!`);
+      setTeamMessage(`${pokemon.name} added to your team.`);
     } else if (result === "full") {
       setTeamMessage("Your team is already full (6 Pokemon).");
     }
   };
 
-  useEffect(() => {
-    async function loadPokemon() {
-      setLoading(true);
-      setError(null);
+  if (loading) {
+    return (
+      <div className="container py-5 text-center">
+        <p>Loading Pokemon...</p>
+      </div>
+    );
+  }
 
-      try {
-        const data = await getPokemon(id);
-        setPokemon(data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    }
+  if (error) {
+    return (
+      <div className="container py-5 text-center">
+        <p className="text-danger">{error}</p>
+        <Link to="/" className="btn btn-outline-secondary">
+          Back to Explore
+        </Link>
+      </div>
+    );
+  }
 
-    loadPokemon();
-  }, [id]);
-
-  if (loading) return <p className="text-center py-5">Loading Pokemon...</p>;
-  if (error) return <p className="text-center text-danger py-5">{error}</p>;
   if (!pokemon) return null;
+
+  const artwork =
+    pokemon.sprites.other?.["official-artwork"]?.front_default ||
+    pokemon.sprites.front_default;
 
   return (
     <div className="container py-5">
@@ -61,79 +91,74 @@ function Details() {
         &larr; Back to Explore
       </Link>
 
-      <h1 className="text-capitalize">{pokemon.name}</h1>
-      <p>#{String(pokemon.id).padStart(3, "0")}</p>
-      <img
-        src={pokemon.sprites.other["official-artwork"].front_default}
-        alt={pokemon.name}
-        className="img-fluid"
-        style={{ maxWidth: "300px" }}
-      />
-      <div className="mt-3">
-        <p>
-          <strong>Type:</strong>{" "}
-          {pokemon.types.map((type) => type.type.name).join(", ")}
-        </p>
+      <div className="row g-4 align-items-center mb-5">
+        <div className="col-12 col-md-5">
+          <div className="pokemon-detail-artwork">
+            {artwork ? (
+              <img src={artwork} alt={pokemon.name} className="img-fluid" />
+            ) : (
+              <p className="text-muted">Artwork unavailable</p>
+            )}
+          </div>
+        </div>
 
-        <p>
-          <strong>Height:</strong> {pokemon.height / 10} m
-        </p>
-
-        <p>
-          <strong>Weight:</strong> {pokemon.weight / 10} kg
-        </p>
-      </div>
-      <div className="mt-4">
-        <h3>Base Stats</h3>
-
-        {pokemon.stats.map((stat) => (
-          <p key={stat.stat.name}>
-            <strong className="text-capitalize">
-              {stat.stat.name.replace("-", " ")}:
-            </strong>{" "}
-            {stat.base_stat}
+        <div className="col-12 col-md-7">
+          <p className="text-muted mb-1">
+            #{String(pokemon.id).padStart(3, "0")}
           </p>
-        ))}
+
+          <h1 className="display-4 text-capitalize mb-3">{pokemon.name}</h1>
+
+          <div className="mb-4">
+            <PokemonTypes types={pokemon.types} />
+          </div>
+
+          <p className="text-muted">
+            Explore the stats and characteristics of {pokemon.name}.
+          </p>
+
+          <div className="d-flex flex-wrap gap-2 mt-4">
+            <button
+              className={`btn ${
+                isInTeam ? "btn-outline-danger" : "btn-primary"
+              }`}
+              onClick={handleTeamToggle}
+              disabled={!isInTeam && team.length >= 6}
+            >
+              {isInTeam
+                ? "Remove from Team"
+                : team.length >= 6
+                  ? "Team Full"
+                  : "+ Add to Team"}
+            </button>
+
+            <button
+              className={`btn ${
+                favorite ? "btn-danger" : "btn-outline-danger"
+              }`}
+              onClick={() => toggleFavorite(pokemon)}
+              aria-label={
+                favorite ? "Remove from Favorites" : "Add to Favorites"
+              }
+              title={favorite ? "Remove from Favorites" : "Add to Favorites"}
+            >
+              <Heart size={20} fill={favorite ? "currentColor" : "none"} />
+            </button>
+          </div>
+
+          {teamMessage && (
+            <p className="small text-muted mt-3 mb-0" role="status">
+              {teamMessage}
+            </p>
+          )}
+        </div>
       </div>
-      <div className="mt-4 mb-4 d-flex gap-2">
-        <button
-          className={`btn ${
-            team.some((p) => p.id === pokemon.id)
-              ? "btn-outline-danger"
-              : "btn-primary"
-          }`}
-          onClick={handleTeamToggle}
-          disabled={!team.some((p) => p.id === pokemon.id) && team.length >= 6}
-        >
-          {team.some((p) => p.id === pokemon.id)
-            ? "Remove from Team"
-            : team.length >= 6
-              ? "Team Full"
-              : "+ Add to Team"}
-        </button>
-        <button
-          className={`btn ${
-            isFavorite(pokemon.id) ? "btn-danger" : "btn-outline-danger"
-          }`}
-          onClick={() => toggleFavorite(pokemon)}
-          aria-label={
-            isFavorite(pokemon.id)
-              ? "Remove from Favorites"
-              : "Add to Favorites"
-          }
-          title={
-            isFavorite(pokemon.id)
-              ? "Remove from Favorites"
-              : "Add to Favorites"
-          }
-        >
-          <Heart
-            size={20}
-            fill={isFavorite(pokemon.id) ? "currentColor" : "none"}
-          />
-        </button>
-        {teamMessage && <p className="mt-2 text-muted">{teamMessage}</p>}
-      </div>
+
+      <h2 className="mb-3">About</h2>
+      <PokemonInfo pokemon={pokemon} />
+
+      {/* Pokemon stats */}
+      <PokemonStats stats={pokemon.stats} />
     </div>
   );
 }

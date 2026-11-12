@@ -1,39 +1,16 @@
 const BASE_URL = "https://pokeapi.co/api/v2";
-
 const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 
 // In-memory cache
 const memoryCache = new Map();
 
-export async function fetchWithCache(url) {
-  const memoryCached = memoryCache.get(url);
+async function fetchWithMemoryCache(url) {
+  const cached = memoryCache.get(url);
 
-  if (memoryCached && Date.now() - memoryCached.timestamp < CACHE_DURATION) {
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
     console.log("Memory cache hit:", url);
-    return memoryCached.data;
+    return cached.data;
   }
-
-  try {
-    const stored = localStorage.getItem(url);
-
-    if (stored) {
-      const parsed = JSON.parse(stored);
-
-      if (Date.now() - parsed.timestamp < CACHE_DURATION) {
-        console.log("LocalStorage cache hit:", url);
-
-        memoryCache.set(url, parsed);
-
-        return parsed.data;
-      }
-
-      localStorage.removeItem(url);
-    }
-  } catch (error) {
-    console.warn("Could not read cache:", error);
-  }
-
-  console.log("Fetching from API:", url);
 
   const response = await fetch(url);
 
@@ -43,52 +20,92 @@ export async function fetchWithCache(url) {
 
   const data = await response.json();
 
-  const cacheEntry = {
+  memoryCache.set(url, {
     data,
     timestamp: Date.now(),
-  };
+  });
 
-  memoryCache.set(url, cacheEntry);
+  return data;
+}
+
+async function fetchWithPersistentCache(url) {
+  const cached = localStorage.getItem(url);
+
+  if (cached) {
+    try {
+      const parsed = JSON.parse(cached);
+
+      if (Date.now() - parsed.timestamp < CACHE_DURATION) {
+        console.log("Local storage cache hit:", url);
+        return parsed.data;
+      }
+
+      localStorage.removeItem(url);
+    } catch (error) {
+      console.warn("Could not read cached list:", error);
+      localStorage.removeItem(url);
+    }
+  }
+
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error(`API request failed: ${response.status}`);
+  }
+
+  const data = await response.json();
 
   try {
-    localStorage.setItem(url, JSON.stringify(cacheEntry));
+    localStorage.setItem(
+      url,
+      JSON.stringify({
+        data,
+        timestamp: Date.now(),
+      }),
+    );
   } catch (error) {
-    console.warn("Could not save cache:", error);
+    console.warn("Could not save Pokemon list cache:", error);
   }
 
   return data;
 }
 
-// Fetch specific pokemon by ID
 export async function getPokemon(id) {
-  return fetchWithCache(`${BASE_URL}/pokemon/${id}`);
+  return fetchWithMemoryCache(`${BASE_URL}/pokemon/${id}`);
 }
 
 export async function getPokemonList(limit = 24, offset = 0) {
-  return fetchWithCache(`${BASE_URL}/pokemon?limit=${limit}&offset=${offset}`);
+  const url = `${BASE_URL}/pokemon?limit=${limit}&offset=${offset}`;
+
+  if (limit >= 1000) {
+    return fetchWithPersistentCache(url);
+  }
+
+  return fetchWithMemoryCache(url);
 }
-// Fetch a bunch of pokemons one time, to avoid calling the API too often
-// Returns lightweight data
-export async function getPokemonPool(limit = 2000, offset = 0) {
-  const data = await fetchWithCache(
+
+export async function getPokemonDetails(url) {
+  return fetchWithMemoryCache(url);
+}
+
+export async function getPokemonPool(limit = 500, offset = 0) {
+  const data = await fetchWithMemoryCache(
     `${BASE_URL}/pokemon?limit=${limit}&offset=${offset}`,
   );
+
   return data.results;
 }
 
 export async function getRandomPokemon(count = 12) {
-  const pool = await getPokemonPool();
+  const pool = await getPokemonPool(2000);
 
-  const randomItems = [];
-  const takenIndices = new Set();
+  const shuffled = [...pool].sort(() => Math.random() - 0.5);
 
-  while (randomItems.length < count && takenIndices.size < pool.length) {
-    const randomIndex = Math.floor(Math.random() * pool.length);
-    if (!takenIndices.has(randomIndex)) {
-      takenIndices.add(randomIndex);
-      randomItems.push(pool[randomIndex]);
-    }
-  }
+  const selected = shuffled.slice(0, count);
 
-  return randomItems;
+  const pokemonDetails = await Promise.all(
+    selected.map((pokemon) => getPokemonDetails(pokemon.url)),
+  );
+
+  return pokemonDetails;
 }

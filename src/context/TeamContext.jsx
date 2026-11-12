@@ -1,12 +1,26 @@
-import { createContext, useContext, useState } from "react";
-
-const TeamContext = createContext();
+import { useState } from "react";
+import { TeamContext } from "./useTeam";
 
 export function TeamProvider({ children }) {
   const [team, setTeam] = useState(() => {
-    const savedTeam = localStorage.getItem("pokemon-team");
-    return savedTeam ? JSON.parse(savedTeam) : [];
+    try {
+      const savedTeam = localStorage.getItem("pokemon-team");
+      return savedTeam ? JSON.parse(savedTeam) : [];
+    } catch (error) {
+      console.error("Could not load saved team:", error);
+      return [];
+    }
   });
+
+  const saveTeam = (updatedTeam) => {
+    setTeam(updatedTeam);
+
+    try {
+      localStorage.setItem("pokemon-team", JSON.stringify(updatedTeam));
+    } catch (error) {
+      console.error("Could not save team to localStorage:", error);
+    }
+  };
 
   const addToTeam = (pokemon) => {
     if (team.length >= 6) {
@@ -18,24 +32,19 @@ export function TeamProvider({ children }) {
     }
 
     const updatedTeam = [...team, pokemon];
-
-    setTeam(updatedTeam);
-    localStorage.setItem("pokemon-team", JSON.stringify(updatedTeam));
+    saveTeam(updatedTeam);
 
     return "added";
   };
 
   const replaceTeam = (newTeam) => {
     const updatedTeam = newTeam.slice(0, 6);
-    setTeam(updatedTeam);
-    localStorage.setItem("pokemon-team", JSON.stringify(updatedTeam));
+    saveTeam(updatedTeam);
   };
 
   const removeFromTeam = (id) => {
     const updatedTeam = team.filter((p) => p.id !== id);
-
-    setTeam(updatedTeam);
-    localStorage.setItem("pokemon-team", JSON.stringify(updatedTeam));
+    saveTeam(updatedTeam);
   };
 
   return (
@@ -45,8 +54,4 @@ export function TeamProvider({ children }) {
       {children}
     </TeamContext.Provider>
   );
-}
-
-export function useTeam() {
-  return useContext(TeamContext);
 }

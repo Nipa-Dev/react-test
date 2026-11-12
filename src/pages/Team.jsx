@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Link } from "react-router";
-import { useTeam } from "../context/TeamContext";
+import { useTeam } from "../context/useTeam";
 import { getPokemonPool, getPokemon } from "../services/api";
-import PokemonCard from "../components/PokemonCard";
+import PokemonCard from "../components/pokemon/PokemonCard";
+import TeamStats from "../components/team/TeamStats";
+import TeamTypes from "../components/team/TeamTypes";
 
 function Team() {
   const { team, removeFromTeam, replaceTeam } = useTeam();
@@ -86,64 +88,39 @@ function Team() {
         <span className="badge bg-primary fs-6">{team.length} / 6</span>
       </div>
 
-      <div className="row g-3 mb-4">
-        <div className="col-6 col-lg-4">
-          <div className="card h-100 p-3">
-            <p className="text-muted mb-1">Team Size</p>
-            <h2>{team.length} / 6</h2>
-          </div>
-        </div>
+      <TeamStats
+        teamSize={team.length}
+        averageStats={averageStats}
+        typeCount={teamTypes.length}
+      />
 
-        <div className="col-6 col-lg-4">
-          <div className="card h-100 p-3">
-            <p className="text-muted mb-1">Average Total Stats</p>
-            <h2>{averageStats}</h2>
-          </div>
-        </div>
-
-        <div className="col-12 col-lg-4">
-          <div className="card h-100 p-3">
-            <p className="text-muted mb-1">Type Coverage</p>
-            <h2>{teamTypes.length} types</h2>
-          </div>
-        </div>
-      </div>
-
-      <div className="card p-3 mb-4">
-        <h5>Team Types</h5>
-
-        {teamTypes.length > 0 ? (
-          <div className="d-flex flex-wrap gap-2">
-            {teamTypes.map((type) => (
-              <span key={type} className="badge bg-secondary text-capitalize">
-                {type}
-              </span>
-            ))}
-          </div>
-        ) : (
-          <p className="text-muted mb-0">
-            Add Pokemon to see your team's type coverage.
-          </p>
-        )}
-      </div>
+      <TeamTypes types={teamTypes} />
 
       {strongestPokemon && (
         <div className="card p-3 mb-4">
           <h5>Strongest Pokemon</h5>
+
           <div className="d-flex align-items-center gap-3">
             <img
               src={
-                strongestPokemon.sprites.other["official-artwork"].front_default
+                strongestPokemon.sprites.other?.["official-artwork"]
+                  ?.front_default || strongestPokemon.sprites.front_default
               }
               alt={strongestPokemon.name}
-              style={{ width: "90px", height: "90px", objectFit: "contain" }}
+              style={{
+                width: "90px",
+                height: "90px",
+                objectFit: "contain",
+              }}
             />
 
             <div>
               <h5 className="text-capitalize mb-1">{strongestPokemon.name}</h5>
+
               <p className="text-muted mb-0">
                 Total base stats: {strongestPokemon.totalStats}
               </p>
+
               <Link to={`/pokemon/${strongestPokemon.id}`} className="small">
                 View details
               </Link>
@@ -157,7 +134,7 @@ function Team() {
           <div>
             <h4>Random Team Generator</h4>
             <p className="text-muted mb-0">
-              Generate six random Pokemon using PokéAPI.
+              Generate six random Pokemon using PokeAPI.
             </p>
           </div>
 
@@ -176,9 +153,17 @@ function Team() {
           </p>
         )}
 
-        {message && <p className="text-success mt-3 mb-0">{message}</p>}
+        {message && (
+          <p className="text-success mt-3 mb-0" role="status">
+            {message}
+          </p>
+        )}
 
-        {error && <p className="text-danger mt-3 mb-0">{error}</p>}
+        {error && (
+          <p className="text-danger mt-3 mb-0" role="alert">
+            {error}
+          </p>
+        )}
       </div>
 
       <div className="mb-3">
@@ -192,6 +177,7 @@ function Team() {
           <p className="text-muted">
             Explore Pokemon or generate a random team to get started.
           </p>
+
           <Link to="/" className="btn btn-outline-primary mt-2">
             Explore Pokemon
           </Link>
