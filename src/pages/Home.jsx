@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getPokemonPool, getRandomPokemon } from "../services/api";
-import PokemonCard from "../components/PokemonCard";
+import PokemonCard from "../components/pokemon/PokemonCard";
 import SearchBar from "../components/SearchBar";
 
 function Home() {

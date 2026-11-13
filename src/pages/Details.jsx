@@ -4,11 +4,11 @@ import { Heart } from "lucide-react";
 
 import { getPokemon } from "../services/api";
 import { useTeam } from "../context/useTeam";
-import { useFavorites } from "../context/FavoritesContext";
+import { useFavorites } from "../context/useFavorites";
 
-import PokemonTypes from "../components/PokemonTypes";
-import PokemonStats from "../components/PokemonStats";
-import PokemonInfo from "../components/PokemonInfo";
+import PokemonTypes from "../components/pokemon/PokemonTypes";
+import PokemonStats from "../components/pokemon/PokemonStats";
+import PokemonInfo from "../components/pokemon/PokemonInfo";
 
 function Details() {
   const { id } = useParams();

@@ -1,6 +1,6 @@
 import { Link } from "react-router";
-import { useFavorites } from "../context/FavoritesContext";
-import PokemonCard from "../components/PokemonCard";
+import { useFavorites } from "../context/useFavorites";
+import PokemonCard from "../components/pokemon/PokemonCard";
 
 function Favorites() {
   const { favorites, toggleFavorite } = useFavorites();
