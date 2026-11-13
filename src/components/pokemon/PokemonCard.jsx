@@ -29,6 +29,7 @@ function PokemonCard({ pokemon, onRemove }) {
           <button
             className="btn btn-outline-danger btn-sm mt-2"
             onClick={() => onRemove(id)}
+            aria-label={`Remove ${pokemon.name} from team`}
           >
             Remove from Team
           </button>

@@ -45,11 +45,19 @@ function Home() {
     : pokemon;
 
   if (loading) {
-    return <h2 className="text-center py-5">Loading Pokemon Pool...</h2>;
+    return (
+      <h2 className="text-center py-5" role="status" aria-live="polite">
+        Loading Pokemon Pool...
+      </h2>
+    );
   }
 
   if (error) {
-    return <h2 className="text-center text-danger py-5">Error: {error}</h2>;
+    return (
+      <h2 className="text-center text-danger py-5" role="alert">
+        Error: {error}
+      </h2>
+    );
   }
 
   return (
@@ -74,7 +82,7 @@ function Home() {
         {displayedPokemon.length > 0 ? (
           displayedPokemon.map((p) => <PokemonCard key={p.name} pokemon={p} />)
         ) : (
-          <p className="text-center py-4">
+          <p className="text-center py-4" role="status">
             No Pokemon found matching "{searchTerm}".
           </p>
         )}

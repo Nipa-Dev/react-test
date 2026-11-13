@@ -138,7 +138,9 @@ function Details() {
               }`}
               onClick={() => toggleFavorite(pokemon)}
               aria-label={
-                favorite ? "Remove from Favorites" : "Add to Favorites"
+                favorite
+                  ? `Remove ${pokemon.name} from favorites`
+                  : `Add ${pokemon.name} to favorites`
               }
               title={favorite ? "Remove from Favorites" : "Add to Favorites"}
             >
