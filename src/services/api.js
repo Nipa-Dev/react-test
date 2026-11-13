@@ -99,13 +99,24 @@ export async function getPokemonPool(limit = 500, offset = 0) {
 export async function getRandomPokemon(count = 12) {
   const pool = await getPokemonPool(2000);
 
-  const shuffled = [...pool].sort(() => Math.random() - 0.5);
-
-  const selected = shuffled.slice(0, count);
+  const selected = getRandomItems(pool, count);
 
   const pokemonDetails = await Promise.all(
     selected.map((pokemon) => getPokemonDetails(pokemon.url)),
   );
 
   return pokemonDetails;
+}
+
+// Helper function to pick N random items without repetition
+function getRandomItems(arr, count) {
+  const cloned = [...arr];
+  const n = Math.min(count, cloned.length);
+
+  for (let i = 0; i < n; i++) {
+    const j = i + Math.floor(Math.random() * (cloned.length - i));
+    [cloned[i], cloned[j]] = [cloned[j], cloned[i]];
+  }
+
+  return cloned.slice(0, n);
 }

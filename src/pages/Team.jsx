@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router";
 import { useTeam } from "../context/useTeam";
-import { getPokemonPool, getPokemon } from "../services/api";
+import { getRandomPokemon } from "../services/api";
 import PokemonCard from "../components/pokemon/PokemonCard";
 import TeamStats from "../components/team/TeamStats";
 import TeamTypes from "../components/team/TeamTypes";
@@ -53,19 +53,7 @@ function Team() {
     setMessage("");
 
     try {
-      const pool = await getPokemonPool();
-
-      // Shuffle the pool and select six unique Pokemon
-      const shuffledPool = [...pool].sort(() => Math.random() - 0.5);
-
-      const selectedPokemon = shuffledPool.slice(0, 6);
-
-      const pokemonDetails = await Promise.all(
-        selectedPokemon.map((pokemon) => {
-          const id = pokemon.url.split("/").filter(Boolean).pop();
-          return getPokemon(id);
-        }),
-      );
+      const pokemonDetails = await getRandomPokemon(6);
 
       replaceTeam(pokemonDetails);
       setMessage("Your new random team is ready!");
