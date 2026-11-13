@@ -1,9 +1,9 @@
-
 ## Installation and Setup
 
 ### Prerequisites
 
 Make sure you have installed:
+
 - Node.js
 - pnpm
 
